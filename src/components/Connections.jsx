@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { addConnections } from "../utils/conectionSlice";
 import { Link } from "react-router-dom";
+import Loader from "./Loader";
 
 const Connections = () => {
   const connections = useSelector((store) => store.connections);
@@ -24,13 +25,27 @@ const Connections = () => {
     fetchConnections();
   }, []);
 
-  if (!connections) return;
+  if (!connections) return <Loader />;
 
-  if (connections.length === 0) return <h1> No Connections Found</h1>;
+  if (connections.length === 0)
+    return (
+      <div className="flex flex-col items-center justify-center gap-4 text-center py-24 px-4">
+        <h1 className="text-2xl font-bold text-base-content">
+          No Connections Yet
+        </h1>
+        <p className="text-base-content/60 max-w-sm">
+          Start swiping through the feed to find developers and build your
+          network.
+        </p>
+        <Link to="/" className="btn btn-primary mt-2">
+          Go to Feed
+        </Link>
+      </div>
+    );
 
   return (
-    <div className="text-center my-10">
-      <h1 className="text-bold text-white text-3xl">Connections</h1>
+    <div className="text-center my-10 px-4">
+      <h1 className="text-bold text-base-content text-3xl">Connections</h1>
 
       {connections.map((connection) => {
         const { _id, firstName, lastName, photoUrl, age, gender, about } =
@@ -39,16 +54,14 @@ const Connections = () => {
         return (
           <div
             key={_id}
-            className="flex m-4 p-4 rounded-lg bg-base-300 w-1/2 mx-auto"
+            className="flex flex-col sm:flex-row items-center gap-4 m-4 p-4 rounded-lg bg-neutral text-neutral-content w-full sm:w-3/4 lg:w-1/2 mx-auto"
           >
-            <div>
-              <img
-                alt="photo"
-                className="w-20 h-20 rounded-full object-cover"
-                src={photoUrl}
-              />
-            </div>
-            <div className="text-left mx-4 ">
+            <img
+              alt="photo"
+              className="w-20 h-20 rounded-full object-cover shrink-0"
+              src={photoUrl}
+            />
+            <div className="text-center sm:text-left flex-1">
               <h2 className="font-bold text-xl">
                 {firstName + " " + lastName}
               </h2>

@@ -1,3 +1,12 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.btn.btn-disabled,
+.btn[disabled],
+.btn:disabled {
+  background-color: oklch(var(--btn-color, var(--b2)) / 1);
+  border-color: oklch(var(--btn-color, var(--b2)) / 1);
+  color: inherit;
+  opacity: 0.6;
+}
