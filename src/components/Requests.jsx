@@ -42,7 +42,10 @@ const Requests = () => {
 
   if (!requests) return <Loader />;
 
-  if (requests.length === 0)
+  // Skip requests whose sender no longer exists (backend populate returns null)
+  const validRequests = requests.filter((request) => request.fromUserId);
+
+  if (validRequests.length === 0)
     return (
       <div className="flex flex-col items-center justify-center gap-4 text-center py-24 px-4">
         <h1 className="text-2xl font-bold text-base-content">
@@ -64,13 +67,13 @@ const Requests = () => {
         Connection Requests
       </h1>
 
-      {requests.map((request) => {
-        const { _id, firstName, lastName, photoUrl, age, gender, about } =
+      {validRequests.map((request) => {
+        const { firstName, lastName, photoUrl, age, gender, about } =
           request.fromUserId;
 
         return (
           <div
-            key={_id}
+            key={request._id}
             className="flex flex-col sm:flex-row justify-between items-center gap-4 m-4 p-4 rounded-lg bg-neutral text-neutral-content w-full sm:w-3/4 lg:w-1/2 mx-auto"
           >
             <img
