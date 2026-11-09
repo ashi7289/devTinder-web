@@ -1,6 +1,5 @@
 import { Outlet, useNavigate } from "react-router-dom";
 import NavBar from "./NavBar";
-import Footer from "./Footer";
 import axios from "axios";
 import { BASE_URL } from "../utils/constants";
 import { useDispatch, useSelector } from "react-redux";
@@ -43,7 +42,6 @@ const Body = () => {
       <div className="flex-1">
         <Outlet context={{ checkingAuth }} />
       </div>
-      <Footer />
     </div>
   );
 };

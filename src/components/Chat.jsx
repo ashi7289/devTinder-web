@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { createSocketConnection } from "../utils/socket";
 import { useSelector } from "react-redux";
@@ -11,6 +11,7 @@ const Chat = () => {
   const [newMessage, setNewMessage] = useState("");
   const user = useSelector((store) => store.user);
   const userId = user?._id;
+  const socketRef = useRef(null);
 
   const fetchChatMessages = async () => {
     const chat = await axios.get(BASE_URL + "/chat/" + targetUserId, {
@@ -38,12 +39,16 @@ const Chat = () => {
       return;
     }
     const socket = createSocketConnection();
-    // As soon as the page loaded, the socket connection is made and joinChat event is emitted
-    socket.emit("joinChat", {
-      firstName: user.firstName,
-      userId,
-      targetUserId,
+    socketRef.current = socket;
+
+    // Server rejected the connection (no/invalid token)
+    socket.on("connect_error", (err) => {
+      console.error("Socket auth failed:", err.message);
     });
+
+    // As soon as the page loaded, the socket connection is made and joinChat event is emitted
+    // userId comes from the token on the server, so we only send targetUserId
+    socket.emit("joinChat", { targetUserId });
 
     socket.on("messageReceived", ({ firstName, lastName, text }) => {
       console.log(firstName + " :  " + text);
@@ -52,15 +57,13 @@ const Chat = () => {
 
     return () => {
       socket.disconnect();
+      socketRef.current = null;
     };
   }, [userId, targetUserId]);
 
   const sendMessage = () => {
-    const socket = createSocketConnection();
-    socket.emit("sendMessage", {
-      firstName: user.firstName,
-      lastName: user.lastName,
-      userId,
+    // reuse the same authenticated socket instead of opening a new one
+    socketRef.current?.emit("sendMessage", {
       targetUserId,
       text: newMessage,
     });

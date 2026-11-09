@@ -1,18 +1,38 @@
 import axios from "axios";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { BASE_URL } from "../utils/constants";
 import { removeUser } from "../utils/userSlice";
 import { removeFeed } from "../utils/feedSlice";
 import { removeConnections } from "../utils/conectionSlice";
-import { removeRequests } from "../utils/requestSlice";
+import { addRequests, removeRequests } from "../utils/requestSlice";
+
+// Red on hover, and stays red for the page you are on
+const navLinkClass = ({ isActive }) =>
+  "flex flex-col items-center text-xs hover:text-accent " +
+  (isActive ? "text-accent" : "text-base-content/70");
 
 const NavBar = () => {
   const user = useSelector((store) => store.user);
+  const requests = useSelector((store) => store.requests);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [loggingOut, setLoggingOut] = useState(false);
+
+  // Load pending requests so the navbar badge shows a count on every page
+  useEffect(() => {
+    if (!user || requests) return;
+    axios
+      .get(BASE_URL + "/user/requests/received", { withCredentials: true })
+      .then((res) => dispatch(addRequests(res.data.data)))
+      .catch(() => {});
+  }, [user]);
+
+  // Ignore requests whose sender no longer exists, same as the Requests page
+  const requestCount = requests
+    ? requests.filter((request) => request.fromUserId).length
+    : 0;
 
   const handleLogout = async () => {
     setLoggingOut(true);
@@ -42,9 +62,9 @@ const NavBar = () => {
         </Link>
         {user && (
           <div className="hidden md:flex items-center gap-[3rem] ml-[25rem] px-4">
-            <Link
-              to="/"
-              className="flex flex-col items-center text-xs text-base-content/70 hover:text-accent"
+            <NavLink
+              to="/" end
+              className={navLinkClass}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -55,24 +75,31 @@ const NavBar = () => {
                 <path d="M12 3 2 12h3v8h6v-6h2v6h6v-8h3z" />
               </svg>
               Home
-            </Link>
-            <Link
+            </NavLink>
+            <NavLink
               to="/requests"
-              className="flex flex-col items-center text-xs text-base-content/70 hover:text-accent"
+              className={navLinkClass}
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                className="w-6 h-6"
-              >
-                <path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5zm7 2h-2.18a6.98 6.98 0 0 1-9.64 0H5a4 4 0 0 0-4 4v3h22v-3a4 4 0 0 0-4-4z" />
-              </svg>
-              My Network
-            </Link>
-            <Link
+              <div className="relative">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  className="w-6 h-6"
+                >
+                  <path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5zm7 2h-2.18a6.98 6.98 0 0 1-9.64 0H5a4 4 0 0 0-4 4v3h22v-3a4 4 0 0 0-4-4z" />
+                </svg>
+                {requestCount > 0 && (
+                  <span className="badge badge-error badge-xs absolute -top-2 -right-3 h-4 min-w-4 px-1 text-[10px] font-bold text-white">
+                    {requestCount > 99 ? "99+" : requestCount}
+                  </span>
+                )}
+              </div>
+              Requests
+            </NavLink>
+            <NavLink
               to="/connections"
-              className="flex flex-col items-center text-xs text-base-content/70 hover:text-accent"
+              className={navLinkClass}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -83,7 +110,7 @@ const NavBar = () => {
                 <path d="M4 4h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H8l-4 4V6a2 2 0 0 1 2-2z" />
               </svg>
               Messaging
-            </Link>
+            </NavLink>
           </div>
         )}
       </div>
@@ -107,7 +134,7 @@ const NavBar = () => {
               className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow"
             >
               <li>
-                <Link to="/profile">Profile</Link>
+                <Link to="/profile">My Profile</Link>
               </li>
               <li className="md:hidden">
                 <Link to="/connections">Connections</Link>
