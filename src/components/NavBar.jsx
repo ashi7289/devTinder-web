@@ -43,9 +43,8 @@ const NavBar = () => {
       dispatch(removeConnections());
       dispatch(removeRequests());
       return navigate("/login");
-    } catch (err) {
+    } catch {
       // Error logic maybe redirect to error page
-      console.log(err);
     } finally {
       setLoggingOut(false);
     }
