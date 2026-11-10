@@ -15,6 +15,7 @@ class ErrorBoundary extends Component {
     if (this.state.hasError) {
       return (
         <div className="flex flex-col items-center justify-center gap-4 text-center min-h-screen px-4">
+          <p className="font-mono text-sm text-error">{"// uncaught exception"}</p>
           <h1 className="text-3xl font-bold text-base-content">
             Something went wrong
           </h1>
@@ -23,7 +24,7 @@ class ErrorBoundary extends Component {
             again.
           </p>
           <button
-            className="btn btn-primary mt-2"
+            className="btn-gradient mt-2"
             onClick={() => window.location.assign("/")}
           >
             Go to Home

@@ -2,11 +2,78 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    @apply bg-base-100 text-base-content font-sans;
+    /* Soft glow blobs + faint dev grid behind every page */
+    background-image: radial-gradient(
+        circle at 10% -10%,
+        rgba(255, 61, 113, 0.18),
+        transparent 40%
+      ),
+      radial-gradient(
+        circle at 95% 10%,
+        rgba(139, 92, 246, 0.16),
+        transparent 40%
+      ),
+      linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+    background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+    background-attachment: fixed;
+  }
+
+  ::selection {
+    background: rgba(255, 61, 113, 0.35);
+  }
+}
+
+@layer components {
+  .text-gradient {
+    @apply bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent;
+  }
+
+  .btn-gradient {
+    @apply btn border-0 text-white bg-gradient-to-r from-primary to-secondary shadow-lg shadow-primary/25 hover:brightness-110 hover:shadow-primary/40;
+  }
+
+  .glass-card {
+    @apply rounded-box border border-white/10 bg-base-200/70 backdrop-blur-xl shadow-2xl shadow-black/40;
+  }
+
+  .field {
+    @apply input w-full border-white/10 bg-base-300/60 text-base-content placeholder:text-base-content/30 focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/30 transition;
+  }
+
+  .field-label {
+    @apply mb-1.5 block text-sm font-medium text-base-content/70;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 text-xs font-medium text-base-content/70;
+  }
+
+  .page-title {
+    @apply text-3xl font-extrabold tracking-tight sm:text-4xl;
+  }
+}
+
 .btn.btn-disabled,
 .btn[disabled],
 .btn:disabled {
-  background-color: oklch(var(--btn-color, var(--b2)) / 1);
-  border-color: oklch(var(--btn-color, var(--b2)) / 1);
+  opacity: 0.55;
   color: inherit;
-  opacity: 0.6;
+}
+
+/* Keep Chrome/Safari autofill from painting inputs light blue and hiding the icons */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #e6e8ef;
+  caret-color: #e6e8ef;
+  -webkit-box-shadow: 0 0 0 1000px #161a26 inset;
+  transition: background-color 9999s ease-out;
 }

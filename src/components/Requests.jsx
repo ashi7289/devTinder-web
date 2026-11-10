@@ -3,8 +3,11 @@ import { BASE_URL } from "../utils/constants";
 import { useDispatch, useSelector } from "react-redux";
 import { addRequests, removeRequest } from "../utils/requestSlice";
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import Loader from "./Loader";
+import Icon from "./ui/Icon";
+import EmptyState from "./ui/EmptyState";
+import PageHeader from "./ui/PageHeader";
+import PersonCard from "./ui/PersonCard";
 
 const Requests = () => {
   const requests = useSelector((store) => store.requests);
@@ -14,13 +17,14 @@ const Requests = () => {
   const reviewRequest = async (status, _id) => {
     setLoadingKey(_id + status);
     try {
-      const res = await axios.post(
+      await axios.post(
         BASE_URL + "/request/review/" + status + "/" + _id,
         {},
         { withCredentials: true }
       );
       dispatch(removeRequest(_id));
-    } catch (err) {
+    } catch {
+      // keep the request so the user can retry
     } finally {
       setLoadingKey(null);
     }
@@ -33,7 +37,9 @@ const Requests = () => {
       });
 
       dispatch(addRequests(res.data.data));
-    } catch (err) {}
+    } catch {
+      // leave the loader / previous list in place
+    }
   };
 
   useEffect(() => {
@@ -47,72 +53,57 @@ const Requests = () => {
 
   if (validRequests.length === 0)
     return (
-      <div className="flex flex-col items-center justify-center gap-4 text-center py-24 px-4">
-        <h1 className="text-2xl font-bold text-base-content">
-          No Requests Found
-        </h1>
-        <p className="text-base-content/60 max-w-sm">
-          You don&apos;t have any pending connection requests right now. Check
-          back later, or explore the feed to connect with more developers.
-        </p>
-        <Link to="/" className="btn btn-primary mt-2">
-          Go to Feed
-        </Link>
-      </div>
+      <EmptyState
+        icon="userPlus"
+        title="No pending requests"
+        text="When a developer is interested in you, they'll show up here. Keep swiping to get noticed."
+        actionLabel="Discover developers"
+        actionTo="/"
+      />
     );
 
   return (
-    <div className="text-center my-10 px-4">
-      <h1 className="text-bold text-base-content text-3xl">
-        Connection Requests
-      </h1>
+    <div className="mx-auto max-w-3xl px-4 pt-8">
+      <PageHeader
+        title="Requests"
+        count={validRequests.length}
+        subtitle="Developers who want to connect with you."
+      />
 
-      {validRequests.map((request) => {
-        const { firstName, lastName, photoUrl, age, gender, about } =
-          request.fromUserId;
-
-        return (
-          <div
+      <div className="space-y-4">
+        {validRequests.map((request, i) => (
+          <PersonCard
             key={request._id}
-            className="flex flex-col sm:flex-row justify-between items-center gap-4 m-4 p-4 rounded-lg bg-neutral text-neutral-content w-full sm:w-3/4 lg:w-1/2 mx-auto"
+            person={request.fromUserId}
+            style={{ animationDelay: `${i * 60}ms` }}
           >
-            <img
-              alt="photo"
-              className="w-20 h-20 rounded-full object-cover shrink-0"
-              src={photoUrl}
-            />
-            <div className="text-center sm:text-left flex-1">
-              <h2 className="font-bold text-xl">
-                {firstName + " " + lastName}
-              </h2>
-              {age && gender && <p>{age + ", " + gender}</p>}
-              <p>{about}</p>
-            </div>
-            <div className="flex gap-2">
-              <button
-                className="btn btn-primary"
-                onClick={() => reviewRequest("rejected", request._id)}
-                disabled={loadingKey !== null}
-              >
-                {loadingKey === request._id + "rejected" && (
-                  <span className="loading loading-spinner"></span>
-                )}
-                Reject
-              </button>
-              <button
-                className="btn btn-secondary"
-                onClick={() => reviewRequest("accepted", request._id)}
-                disabled={loadingKey !== null}
-              >
-                {loadingKey === request._id + "accepted" && (
-                  <span className="loading loading-spinner"></span>
-                )}
-                Accept
-              </button>
-            </div>
-          </div>
-        );
-      })}
+            <button
+              className="btn flex-1 border-white/10 bg-base-300 hover:border-error/40 hover:bg-error/10 hover:text-error sm:flex-none"
+              onClick={() => reviewRequest("rejected", request._id)}
+              disabled={loadingKey !== null}
+            >
+              {loadingKey === request._id + "rejected" ? (
+                <span className="loading loading-spinner loading-sm"></span>
+              ) : (
+                <Icon name="x" className="h-4 w-4" />
+              )}
+              Decline
+            </button>
+            <button
+              className="btn-gradient flex-1 sm:flex-none"
+              onClick={() => reviewRequest("accepted", request._id)}
+              disabled={loadingKey !== null}
+            >
+              {loadingKey === request._id + "accepted" ? (
+                <span className="loading loading-spinner loading-sm"></span>
+              ) : (
+                <Icon name="check" className="h-4 w-4" />
+              )}
+              Accept
+            </button>
+          </PersonCard>
+        ))}
+      </div>
     </div>
   );
 };

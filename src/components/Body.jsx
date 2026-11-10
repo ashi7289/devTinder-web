@@ -5,12 +5,14 @@ import { BASE_URL } from "../utils/constants";
 import { useDispatch, useSelector } from "react-redux";
 import { addUser } from "../utils/userSlice";
 import { useEffect, useState } from "react";
+import usePresence from "../utils/usePresence";
 
 const Body = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const userData = useSelector((store) => store.user);
   const [checkingAuth, setCheckingAuth] = useState(!userData);
+  usePresence();
 
   const fetchUser = async () => {
     if (userData) {
@@ -39,9 +41,10 @@ const Body = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <NavBar />
-      <div className="flex-1">
+      {/* Bottom padding keeps content clear of the mobile tab bar */}
+      <main className={"flex-1 " + (userData ? "pb-24 md:pb-10" : "pb-10")}>
         <Outlet context={{ checkingAuth }} />
-      </div>
+      </main>
     </div>
   );
 };

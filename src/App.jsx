@@ -8,7 +8,7 @@ import appStore from "./utils/appStore";
 import Feed from "./components/Feed";
 import Connections from "./components/Connections";
 import Requests from "./components/Requests";
-import Premium from "./components/Premium";
+// import Premium from "./components/Premium"; // Premium is on hold for now
 import Chat from "./components/Chat";
 import PrivateRoute from "./components/PrivateRoute";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -55,6 +55,7 @@ function App() {
                   </PrivateRoute>
                 }
               />
+              {/* Premium is on hold for now
               <Route
                 path="/premium"
                 element={
@@ -63,6 +64,7 @@ function App() {
                   </PrivateRoute>
                 }
               />
+              */}
               <Route
                 path="/chat/:targetUserId"
                 element={
