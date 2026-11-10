@@ -55,15 +55,15 @@ const NavBar = () => {
     setLoggingOut(true);
     try {
       await axios.post(BASE_URL + "/logout", {}, { withCredentials: true });
+    } catch {
+      // Still log out on this device even if the server call failed
+    } finally {
       dispatch(removeUser());
       dispatch(removeFeed());
       dispatch(removeConnections());
       dispatch(removeRequests());
-      return navigate("/login");
-    } catch {
-      // Error logic maybe redirect to error page
-    } finally {
       setLoggingOut(false);
+      navigate("/login", { replace: true });
     }
   };
 

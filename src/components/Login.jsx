@@ -1,8 +1,8 @@
 import { useState } from "react";
 import axios from "axios";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { addUser } from "../utils/userSlice";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { BASE_URL } from "../utils/constants";
 import AuthLayout from "./ui/AuthLayout";
 import TextField from "./ui/TextField";
@@ -13,6 +13,7 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const user = useSelector((store) => store.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -34,6 +35,9 @@ const Login = () => {
       setLoading(false);
     }
   };
+
+  // Already logged in: no reason to show the login form
+  if (user) return <Navigate to="/" replace />;
 
   return (
     <AuthLayout

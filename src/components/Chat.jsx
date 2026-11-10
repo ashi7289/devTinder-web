@@ -7,6 +7,20 @@ import { BASE_URL } from "../utils/constants";
 import Icon from "./ui/Icon";
 import Avatar from "./ui/Avatar";
 
+// "2:45 PM" today, "Yesterday 2:45 PM", otherwise "12 Nov, 2:45 PM"
+const formatTime = (date) => {
+  const d = new Date(date);
+  const time = d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+
+  const today = new Date();
+  const yesterday = new Date();
+  yesterday.setDate(today.getDate() - 1);
+
+  if (d.toDateString() === today.toDateString()) return time;
+  if (d.toDateString() === yesterday.toDateString()) return "Yesterday " + time;
+  return d.toLocaleDateString([], { day: "numeric", month: "short" }) + ", " + time;
+};
+
 const Chat = () => {
   const { targetUserId } = useParams();
   const [messages, setMessages] = useState([]);
@@ -210,7 +224,9 @@ const Chat = () => {
                 </div>
                 {index === lastMineIndex && (
                   <span className="mt-1 px-1 text-xs text-base-content/50">
-                    {isSeen(msg) ? "Seen" : "Sent"}
+                    {isSeen(msg)
+                      ? "Seen " + formatTime(otherLastRead)
+                      : "Sent " + formatTime(msg.createdAt)}
                   </span>
                 )}
               </div>

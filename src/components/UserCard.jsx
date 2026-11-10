@@ -85,7 +85,7 @@ const UserCard = ({ user, showActions = true }) => {
             )}
           </button>
           <button
-            className="grid h-20 w-20 place-items-center rounded-full bg-gradient-to-br from-primary to-secondary text-white shadow-xl shadow-primary/40 transition hover:scale-110 hover:shadow-primary/60 active:scale-95 disabled:opacity-50"
+            className="grid h-20 w-20 place-items-center rounded-full bg-error text-white shadow-xl shadow-error/40 transition hover:scale-110 hover:brightness-90 hover:shadow-error/60 active:scale-95 disabled:opacity-50"
             onClick={() => handleSendRequest("interested", _id)}
             disabled={busy}
             aria-label="Interested"
@@ -94,7 +94,7 @@ const UserCard = ({ user, showActions = true }) => {
             {loadingStatus === "interested" ? (
               <span className="loading loading-spinner"></span>
             ) : (
-              <Icon name="heart" className="h-9 w-9 fill-current" />
+              <Icon name="check" className="h-9 w-9" strokeWidth={3} />
             )}
           </button>
         </div>
