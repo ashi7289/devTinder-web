@@ -7,6 +7,7 @@ import { BASE_URL } from "../utils/constants";
 import AuthLayout from "./ui/AuthLayout";
 import TextField from "./ui/TextField";
 import FormError from "./ui/FormError";
+import PasswordRules, { missingPasswordRules } from "./ui/PasswordRules";
 
 const Signup = () => {
   const [firstName, setFirstName] = useState("");
@@ -15,6 +16,7 @@ const Signup = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [triedSubmit, setTriedSubmit] = useState(false);
   const user = useSelector((store) => store.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -22,6 +24,15 @@ const Signup = () => {
   const handleSignUp = async (e) => {
     e.preventDefault();
     setError("");
+    setTriedSubmit(true);
+
+    // Catch a weak password here instead of waiting for the server's vague error
+    const missing = missingPasswordRules(password);
+    if (missing.length) {
+      setError("Password needs: " + missing.join(", ").toLowerCase() + ".");
+      return;
+    }
+
     setLoading(true);
     try {
       const res = await axios.post(
@@ -76,11 +87,16 @@ const Signup = () => {
           label="Password"
           icon="lock"
           type="password"
-          placeholder="Use a strong password"
+          placeholder="At least 8 characters"
           autoComplete="new-password"
           value={password}
           onChange={setPassword}
         />
+        {(password || triedSubmit) && (
+          <div className="!mt-0">
+            <PasswordRules password={password} highlightMissing={triedSubmit} />
+          </div>
+        )}
         <FormError message={error} />
         <button type="submit" className="btn-gradient w-full" disabled={loading}>
           {loading && <span className="loading loading-spinner"></span>}

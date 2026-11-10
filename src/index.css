@@ -5,6 +5,8 @@
 @layer base {
   html {
     -webkit-font-smoothing: antialiased;
+    /* Dark native controls: scrollbars, date pickers, any <select> lists */
+    color-scheme: dark;
   }
 
   body {

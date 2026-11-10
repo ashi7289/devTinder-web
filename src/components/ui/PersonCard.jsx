@@ -1,8 +1,9 @@
 import Avatar from "./Avatar";
+import SkillTags from "./SkillTags";
 
 // One developer row used by Requests and Connections; actions go in children
 const PersonCard = ({ person, children, style, online }) => {
-  const { firstName, lastName, photoUrl, age, gender, about } = person;
+  const { firstName, lastName, photoUrl, age, gender, about, skills } = person;
   const meta = [age, gender].filter(Boolean).join(" · ");
 
   return (
@@ -40,6 +41,7 @@ const PersonCard = ({ person, children, style, online }) => {
               {about}
             </p>
           )}
+          <SkillTags skills={skills} max={3} className="mt-2" />
         </div>
       </div>
       {children && <div className="flex shrink-0 gap-2">{children}</div>}

@@ -7,6 +7,9 @@ import { addUser } from "../utils/userSlice";
 import Icon from "./ui/Icon";
 import TextField from "./ui/TextField";
 import FormError from "./ui/FormError";
+import SkillInput from "./ui/SkillInput";
+import Select from "./ui/Select";
+import PhotoUpload from "./ui/PhotoUpload";
 
 const EditProfile = ({ user }) => {
   const [firstName, setFirstName] = useState(user.firstName);
@@ -15,6 +18,7 @@ const EditProfile = ({ user }) => {
   const [age, setAge] = useState(user.age || "");
   const [gender, setGender] = useState(user.gender || "");
   const [about, setAbout] = useState(user.about || "");
+  const [skills, setSkills] = useState(user.skills || []);
   const [error, setError] = useState("");
   const [genderOptions, setGenderOptions] = useState([]);
   const dispatch = useDispatch();
@@ -40,6 +44,15 @@ const EditProfile = ({ user }) => {
     e.preventDefault();
     //Clear Errors
     setError("");
+
+    // Same rules as the server: optional, whole number, 18 to 100
+    if (age !== "") {
+      const value = Number(age);
+      if (!Number.isInteger(value)) return setError("Age must be a whole number");
+      if (value < 18) return setError("You must be at least 18 years old");
+      if (value > 100) return setError("Age must be 100 or less");
+    }
+
     setSaving(true);
     try {
       const res = await axios.patch(
@@ -47,10 +60,10 @@ const EditProfile = ({ user }) => {
         {
           firstName,
           lastName,
-          photoUrl,
           age,
           gender,
           about,
+          skills,
         },
         { withCredentials: true }
       );
@@ -97,12 +110,11 @@ const EditProfile = ({ user }) => {
               />
             </div>
 
-            <TextField
-              label="Photo URL"
-              icon="user"
-              placeholder="https://…"
-              value={photoUrl}
-              onChange={setPhotoUrl}
+            <PhotoUpload
+              photoUrl={photoUrl}
+              firstName={firstName}
+              lastName={lastName}
+              onUploaded={setPhotoUrl}
             />
 
             <div className="grid gap-5 sm:grid-cols-2">
@@ -110,35 +122,22 @@ const EditProfile = ({ user }) => {
                 label="Age"
                 type="number"
                 min="18"
+                max="100"
+                step="1"
                 value={age}
                 onChange={setAge}
               />
-              <label className="block">
-                <span className="field-label">Gender</span>
-                <select
-                  value={gender}
-                  className="select w-full border-white/10 bg-base-300/60 focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/30"
-                  onChange={(e) => setGender(e.target.value)}
-                >
-                  <option value="" disabled>
-                    Select gender
-                  </option>
-                  {genderOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <Select
+                label="Gender"
+                value={gender}
+                options={genderOptions}
+                placeholder="Select gender"
+                onChange={setGender}
+              />
             </div>
 
             <label className="block">
-              <span className="field-label flex justify-between">
-                About
-                <span className="font-mono text-xs text-base-content/40">
-                  {about.length} chars
-                </span>
-              </span>
+              <span className="field-label">About</span>
               <textarea
                 value={about}
                 rows={4}
@@ -147,6 +146,8 @@ const EditProfile = ({ user }) => {
                 onChange={(e) => setAbout(e.target.value)}
               />
             </label>
+
+            <SkillInput skills={skills} onChange={setSkills} />
 
             <FormError message={error} />
 
@@ -173,7 +174,7 @@ const EditProfile = ({ user }) => {
             </p>
             <UserCard
               key={photoUrl}
-              user={{ firstName, lastName, photoUrl, age, gender, about }}
+              user={{ firstName, lastName, photoUrl, age, gender, about, skills }}
               showActions={false}
             />
           </aside>

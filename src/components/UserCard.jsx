@@ -4,9 +4,10 @@ import { BASE_URL } from "../utils/constants";
 import { useDispatch } from "react-redux";
 import { removeUserFromFeed } from "../utils/feedSlice";
 import Icon from "./ui/Icon";
+import SkillTags from "./ui/SkillTags";
 
 const UserCard = ({ user, showActions = true }) => {
-  const { _id, firstName, lastName, photoUrl, age, gender, about } = user;
+  const { _id, firstName, lastName, photoUrl, age, gender, about, skills } = user;
   const dispatch = useDispatch();
   const [loadingStatus, setLoadingStatus] = useState(null);
   const [photoFailed, setPhotoFailed] = useState(false);
@@ -41,7 +42,7 @@ const UserCard = ({ user, showActions = true }) => {
             className="h-full w-full object-cover"
           />
         ) : (
-          <div className="grid h-full w-full place-items-center bg-gradient-to-br from-primary/80 via-secondary/60 to-accent/80 text-7xl font-extrabold uppercase text-white/90">
+          <div className="flex h-full w-full justify-center pt-[22%] bg-gradient-to-br from-primary/80 via-secondary/60 to-accent/80 text-7xl font-extrabold uppercase text-white/90">
             {initials || "?"}
           </div>
         )}
@@ -61,6 +62,7 @@ const UserCard = ({ user, showActions = true }) => {
               </span>
             </div>
           )}
+          <SkillTags skills={skills} max={5} light className="mt-3" />
           {about && (
             <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-white/80">
               {about}
