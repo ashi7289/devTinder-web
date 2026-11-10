@@ -25,7 +25,7 @@ const Login = () => {
       const res = await axios.post(
         BASE_URL + "/login",
         { emailId, password },
-        { withCredentials: true }
+        { withCredentials: true },
       );
       dispatch(addUser(res.data));
       return navigate("/");
@@ -38,6 +38,7 @@ const Login = () => {
 
   // Already logged in: no reason to show the login form
   if (user) return <Navigate to="/" replace />;
+  console.log("HI");
 
   return (
     <AuthLayout
@@ -64,7 +65,11 @@ const Login = () => {
           onChange={setPassword}
         />
         <FormError message={error} />
-        <button type="submit" className="btn-gradient w-full" disabled={loading}>
+        <button
+          type="submit"
+          className="btn-gradient w-full"
+          disabled={loading}
+        >
           {loading && <span className="loading loading-spinner"></span>}
           Log in
         </button>
@@ -72,7 +77,10 @@ const Login = () => {
 
       <p className="mt-8 text-center text-sm text-base-content/60">
         New to DevTinder?{" "}
-        <Link to="/signup" className="font-semibold text-primary hover:underline">
+        <Link
+          to="/signup"
+          className="font-semibold text-primary hover:underline"
+        >
           Create an account
         </Link>
       </p>
