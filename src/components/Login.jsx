@@ -7,24 +7,23 @@ import { BASE_URL } from "../utils/constants";
 import { getErrorMessage, isValidEmail } from "../utils/errorMessage";
 import AuthLayout from "./ui/AuthLayout";
 import TextField from "./ui/TextField";
-import FormError from "./ui/FormError";
+import { useToast } from "./ui/Toast";
 
 const Login = () => {
   const [emailId, setEmailId] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const user = useSelector((store) => store.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const toast = useToast();
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setError("");
-    if (!emailId.trim()) return setError("Please enter your email.");
+    if (!emailId.trim()) return toast.error("Please enter your email.");
     if (!isValidEmail(emailId))
-      return setError("Please enter a valid email address.");
-    if (!password) return setError("Please enter your password.");
+      return toast.error("Please enter a valid email address.");
+    if (!password) return toast.error("Please enter your password.");
 
     setLoading(true);
     try {
@@ -34,9 +33,10 @@ const Login = () => {
         { withCredentials: true },
       );
       dispatch(addUser(res.data));
+      toast.success(`Welcome back, ${res.data?.firstName || "developer"}! 👋`);
       return navigate("/");
     } catch (err) {
-      setError(getErrorMessage(err));
+      toast.error(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -69,7 +69,6 @@ const Login = () => {
           value={password}
           onChange={setPassword}
         />
-        <FormError message={error} />
         <button
           type="submit"
           className="btn-gradient w-full"

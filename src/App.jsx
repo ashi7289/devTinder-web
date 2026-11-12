@@ -13,49 +13,51 @@ import Chat from "./components/Chat";
 import PrivateRoute from "./components/PrivateRoute";
 import ErrorBoundary from "./components/ErrorBoundary";
 import NotFound from "./components/NotFound";
+import { ToastProvider } from "./components/ui/Toast";
 
 function App() {
   return (
     <ErrorBoundary>
       <Provider store={appStore}>
-        <BrowserRouter basename="/">
-          <Routes>
-            <Route path="/" element={<Body />}>
-              <Route
-                path="/"
-                element={
-                  <PrivateRoute>
-                    <Feed />
-                  </PrivateRoute>
-                }
-              />
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
-              <Route
-                path="/profile"
-                element={
-                  <PrivateRoute>
-                    <Profile />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/connections"
-                element={
-                  <PrivateRoute>
-                    <Connections />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/requests"
-                element={
-                  <PrivateRoute>
-                    <Requests />
-                  </PrivateRoute>
-                }
-              />
-              {/* Premium is on hold for now
+        <ToastProvider>
+          <BrowserRouter basename="/">
+            <Routes>
+              <Route path="/" element={<Body />}>
+                <Route
+                  path="/"
+                  element={
+                    <PrivateRoute>
+                      <Feed />
+                    </PrivateRoute>
+                  }
+                />
+                <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<Signup />} />
+                <Route
+                  path="/profile"
+                  element={
+                    <PrivateRoute>
+                      <Profile />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/connections"
+                  element={
+                    <PrivateRoute>
+                      <Connections />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/requests"
+                  element={
+                    <PrivateRoute>
+                      <Requests />
+                    </PrivateRoute>
+                  }
+                />
+                {/* Premium is on hold for now
               <Route
                 path="/premium"
                 element={
@@ -65,18 +67,19 @@ function App() {
                 }
               />
               */}
-              <Route
-                path="/chat/:targetUserId"
-                element={
-                  <PrivateRoute>
-                    <Chat />
-                  </PrivateRoute>
-                }
-              />
-              <Route path="*" element={<NotFound />} />
-            </Route>
-          </Routes>
-        </BrowserRouter>
+                <Route
+                  path="/chat/:targetUserId"
+                  element={
+                    <PrivateRoute>
+                      <Chat />
+                    </PrivateRoute>
+                  }
+                />
+                <Route path="*" element={<NotFound />} />
+              </Route>
+            </Routes>
+          </BrowserRouter>
+        </ToastProvider>
       </Provider>
     </ErrorBoundary>
   );

@@ -7,7 +7,7 @@ import { BASE_URL } from "../utils/constants";
 import { getErrorMessage, isValidEmail } from "../utils/errorMessage";
 import AuthLayout from "./ui/AuthLayout";
 import TextField from "./ui/TextField";
-import FormError from "./ui/FormError";
+import { useToast } from "./ui/Toast";
 import PasswordRules, { missingPasswordRules } from "./ui/PasswordRules";
 
 const Signup = () => {
@@ -15,31 +15,30 @@ const Signup = () => {
   const [lastName, setLastName] = useState("");
   const [emailId, setEmailId] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [triedSubmit, setTriedSubmit] = useState(false);
   const user = useSelector((store) => store.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const toast = useToast();
 
   const handleSignUp = async (e) => {
     e.preventDefault();
-    setError("");
     setTriedSubmit(true);
 
     // Check required fields here so the user gets a clear message right away
-    if (!firstName.trim()) return setError("Please enter your first name.");
+    if (!firstName.trim()) return toast.error("Please enter your first name.");
     if (firstName.trim().length < 4)
-      return setError("First name must be at least 4 characters.");
-    if (!emailId.trim()) return setError("Please enter your email.");
+      return toast.error("First name must be at least 4 characters.");
+    if (!emailId.trim()) return toast.error("Please enter your email.");
     if (!isValidEmail(emailId))
-      return setError("Please enter a valid email address.");
-    if (!password) return setError("Please enter a password.");
+      return toast.error("Please enter a valid email address.");
+    if (!password) return toast.error("Please enter a password.");
 
     // Catch a weak password here instead of waiting for the server's vague error
     const missing = missingPasswordRules(password);
     if (missing.length) {
-      setError("Password needs: " + missing.join(", ").toLowerCase() + ".");
+      toast.error("Password needs: " + missing.join(", ").toLowerCase() + ".");
       return;
     }
 
@@ -51,9 +50,10 @@ const Signup = () => {
         { withCredentials: true }
       );
       dispatch(addUser(res.data.data));
+      toast.success(`Welcome to DevTinder, ${res.data.data?.firstName || firstName.trim()}! 🎉`);
       return navigate("/profile");
     } catch (err) {
-      setError(getErrorMessage(err));
+      toast.error(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -107,7 +107,6 @@ const Signup = () => {
             <PasswordRules password={password} highlightMissing={triedSubmit} />
           </div>
         )}
-        <FormError message={error} />
         <button type="submit" className="btn-gradient w-full" disabled={loading}>
           {loading && <span className="loading loading-spinner"></span>}
           Create account

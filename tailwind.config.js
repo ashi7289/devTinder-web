@@ -12,6 +12,14 @@ export default {
           "0%": { opacity: "0", transform: "translateY(12px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
+        "slide-in-right": {
+          "0%": { opacity: "0", transform: "translateX(110%)" },
+          "100%": { opacity: "1", transform: "translateX(0)" },
+        },
+        "slide-out-right": {
+          "0%": { opacity: "1", transform: "translateX(0)" },
+          "100%": { opacity: "0", transform: "translateX(110%)" },
+        },
         float: {
           "0%, 100%": { transform: "translateY(0)" },
           "50%": { transform: "translateY(-8px)" },
@@ -19,6 +27,8 @@ export default {
       },
       animation: {
         "fade-up": "fade-up 0.45s ease-out both",
+        "slide-in-right": "slide-in-right 0.35s cubic-bezier(0.22, 1, 0.36, 1) both",
+        "slide-out-right": "slide-out-right 0.3s ease-in both",
         float: "float 6s ease-in-out infinite",
       },
     },
