@@ -29,6 +29,8 @@ const Signup = () => {
 
     // Check required fields here so the user gets a clear message right away
     if (!firstName.trim()) return setError("Please enter your first name.");
+    if (firstName.trim().length < 4)
+      return setError("First name must be at least 4 characters.");
     if (!emailId.trim()) return setError("Please enter your email.");
     if (!isValidEmail(emailId))
       return setError("Please enter a valid email address.");

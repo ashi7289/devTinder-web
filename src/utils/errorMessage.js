@@ -50,10 +50,11 @@ const translate = (raw) => {
         const [field, ...rest] = part.split(":");
         const detail = rest.join(":").trim();
         if (/is required/i.test(detail)) return `${capitalize(label(field.trim()))} is required`;
+        const limit = detail.match(/allowed length \((\d+)\)/)?.[1];
         if (/minimum allowed length/i.test(detail))
-          return `${capitalize(label(field.trim()))} is too short`;
+          return `${capitalize(label(field.trim()))} must be at least ${limit || "a few"} characters`;
         if (/maximum allowed length/i.test(detail))
-          return `${capitalize(label(field.trim()))} is too long`;
+          return `${capitalize(label(field.trim()))} must be at most ${limit || "fewer"} characters`;
         // Custom validator messages are usually already readable
         return detail.replace(/Path `\w+`/g, capitalize(label(field.trim())));
       })
