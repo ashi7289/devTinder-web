@@ -3,6 +3,7 @@ import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { BASE_URL } from "../utils/constants";
+import { getErrorMessage } from "../utils/errorMessage";
 import { removeUser } from "../utils/userSlice";
 import { removeFeed } from "../utils/feedSlice";
 import { removeConnections } from "../utils/conectionSlice";
@@ -48,7 +49,7 @@ const DeleteAccount = () => {
       dialogRef.current?.close();
       navigate("/signup", { replace: true });
     } catch (err) {
-      setError(err.response?.data?.message || "Something went wrong");
+      setError(getErrorMessage(err));
     } finally {
       setDeleting(false);
     }

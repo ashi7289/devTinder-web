@@ -5,15 +5,21 @@ import { useDispatch } from "react-redux";
 import { removeUserFromFeed } from "../utils/feedSlice";
 import Icon from "./ui/Icon";
 import SkillTags from "./ui/SkillTags";
+import FormError from "./ui/FormError";
+import { getErrorMessage } from "../utils/errorMessage";
+
+const GENDER_SYMBOLS = { male: "♂", female: "♀" };
 
 const UserCard = ({ user, showActions = true }) => {
   const { _id, firstName, lastName, photoUrl, age, gender, about, skills } = user;
   const dispatch = useDispatch();
   const [loadingStatus, setLoadingStatus] = useState(null);
   const [photoFailed, setPhotoFailed] = useState(false);
+  const [error, setError] = useState("");
 
   const handleSendRequest = async (status, userId) => {
     setLoadingStatus(status);
+    setError("");
     try {
       await axios.post(
         BASE_URL + "/request/send/" + status + "/" + userId,
@@ -21,8 +27,15 @@ const UserCard = ({ user, showActions = true }) => {
         { withCredentials: true }
       );
       dispatch(removeUserFromFeed(userId));
-    } catch {
-      // keep the card so the user can try again
+    } catch (err) {
+      const message = getErrorMessage(err);
+      // Already sent (e.g. from another tab): nothing left to do with this card
+      if (/already exists/i.test(message)) {
+        dispatch(removeUserFromFeed(userId));
+      } else {
+        // keep the card so the user can try again
+        setError(message);
+      }
     } finally {
       setLoadingStatus(null);
     }
@@ -55,12 +68,14 @@ const UserCard = ({ user, showActions = true }) => {
             {firstName} {lastName}
             {age && <span className="ml-2 font-light text-white/80">{age}</span>}
           </h2>
+          {/* Plain text line (not a pill) so it doesn't read like a skill */}
           {gender && (
-            <div className="mt-2">
-              <span className="chip border-white/20 bg-white/10 capitalize text-white/90">
-                {gender}
+            <p className="mt-1 flex items-center gap-1.5 text-sm font-medium capitalize text-white/75">
+              <span className="text-base leading-none text-white/90" aria-hidden="true">
+                {GENDER_SYMBOLS[gender.toLowerCase()] || "⚧"}
               </span>
-            </div>
+              {gender}
+            </p>
           )}
           <SkillTags skills={skills} max={5} light className="mt-3" />
           {about && (
@@ -99,6 +114,11 @@ const UserCard = ({ user, showActions = true }) => {
               <Icon name="check" className="h-9 w-9" strokeWidth={3} />
             )}
           </button>
+        </div>
+      )}
+      {showActions && error && (
+        <div className="mt-4">
+          <FormError message={error} />
         </div>
       )}
     </div>

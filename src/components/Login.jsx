@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { addUser } from "../utils/userSlice";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { BASE_URL } from "../utils/constants";
+import { getErrorMessage, isValidEmail } from "../utils/errorMessage";
 import AuthLayout from "./ui/AuthLayout";
 import TextField from "./ui/TextField";
 import FormError from "./ui/FormError";
@@ -20,17 +21,22 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
+    if (!emailId.trim()) return setError("Please enter your email.");
+    if (!isValidEmail(emailId))
+      return setError("Please enter a valid email address.");
+    if (!password) return setError("Please enter your password.");
+
     setLoading(true);
     try {
       const res = await axios.post(
         BASE_URL + "/login",
-        { emailId, password },
+        { emailId: emailId.trim(), password },
         { withCredentials: true },
       );
       dispatch(addUser(res.data));
       return navigate("/");
     } catch (err) {
-      setError(err?.response?.data || "Something went wrong");
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -38,14 +44,13 @@ const Login = () => {
 
   // Already logged in: no reason to show the login form
   if (user) return <Navigate to="/" replace />;
-  console.log("HI");
 
   return (
     <AuthLayout
       title="Welcome back 👋"
       subtitle="Log in to see who wants to build with you."
     >
-      <form onSubmit={handleLogin} className="space-y-5">
+      <form onSubmit={handleLogin} noValidate className="space-y-5">
         <TextField
           label="Email"
           icon="mail"

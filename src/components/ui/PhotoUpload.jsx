@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { useDispatch } from "react-redux";
 import axios from "axios";
 import { BASE_URL } from "../../utils/constants";
+import { getErrorMessage } from "../../utils/errorMessage";
 import { addUser } from "../../utils/userSlice";
 import Avatar from "./Avatar";
 import Icon from "./Icon";
@@ -44,7 +45,7 @@ const PhotoUpload = ({ photoUrl, firstName, lastName, onUploaded }) => {
       onUploaded(res.data.data.photoUrl);
     } catch (err) {
       onUploaded(photoUrl); // go back to the previous photo
-      setError(err.response?.data?.message || "Upload failed, try again");
+      setError(getErrorMessage(err, "Upload failed, try again."));
     } finally {
       URL.revokeObjectURL(previewUrl);
       setUploading(false);

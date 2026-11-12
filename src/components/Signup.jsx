@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { addUser } from "../utils/userSlice";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { BASE_URL } from "../utils/constants";
+import { getErrorMessage, isValidEmail } from "../utils/errorMessage";
 import AuthLayout from "./ui/AuthLayout";
 import TextField from "./ui/TextField";
 import FormError from "./ui/FormError";
@@ -26,6 +27,13 @@ const Signup = () => {
     setError("");
     setTriedSubmit(true);
 
+    // Check required fields here so the user gets a clear message right away
+    if (!firstName.trim()) return setError("Please enter your first name.");
+    if (!emailId.trim()) return setError("Please enter your email.");
+    if (!isValidEmail(emailId))
+      return setError("Please enter a valid email address.");
+    if (!password) return setError("Please enter a password.");
+
     // Catch a weak password here instead of waiting for the server's vague error
     const missing = missingPasswordRules(password);
     if (missing.length) {
@@ -37,13 +45,13 @@ const Signup = () => {
     try {
       const res = await axios.post(
         BASE_URL + "/signup",
-        { firstName, lastName, emailId, password },
+        { firstName: firstName.trim(), lastName: lastName.trim(), emailId: emailId.trim(), password },
         { withCredentials: true }
       );
       dispatch(addUser(res.data.data));
       return navigate("/profile");
     } catch (err) {
-      setError(err?.response?.data || "Something went wrong");
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -57,7 +65,7 @@ const Signup = () => {
       title="Join DevTinder 🚀"
       subtitle="Create your profile and start matching with developers."
     >
-      <form onSubmit={handleSignUp} className="space-y-5">
+      <form onSubmit={handleSignUp} noValidate className="space-y-5">
         <div className="grid grid-cols-2 gap-4">
           <TextField
             label="First name"

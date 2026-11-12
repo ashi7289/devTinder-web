@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import UserCard from "./UserCard";
 import axios from "axios";
 import { BASE_URL } from "../utils/constants";
+import { getErrorMessage } from "../utils/errorMessage";
 import { useDispatch } from "react-redux";
 import { addUser } from "../utils/userSlice";
 import Icon from "./ui/Icon";
@@ -74,7 +75,7 @@ const EditProfile = ({ user }) => {
         setShowToast(false);
       }, 3000);
     } catch (err) {
-      setError(err?.response?.data || "Something went wrong");
+      setError(getErrorMessage(err));
     } finally {
       setSaving(false);
     }
