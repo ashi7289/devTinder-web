@@ -111,6 +111,18 @@ const EditProfile = ({ user }) => {
               />
             </div>
 
+            {/* Email is the login ID, so it's shown but can't be changed here */}
+            <TextField
+              label="Email"
+              icon="mail"
+              type="email"
+              value={user.emailId || ""}
+              onChange={() => {}}
+              readOnly
+              disabled
+              className="field pl-10 cursor-not-allowed opacity-60"
+            />
+
             <PhotoUpload
               photoUrl={photoUrl}
               firstName={firstName}
