@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { addUser } from "../utils/userSlice";
 import { useEffect, useState } from "react";
 import usePresence from "../utils/usePresence";
+import { hasLoginHint, setLoginHint } from "../utils/authHint";
 
 const Body = () => {
   const dispatch = useDispatch();
@@ -16,7 +17,8 @@ const Body = () => {
   usePresence();
 
   const fetchUser = async () => {
-    if (userData) {
+    // Already have the user, or this browser was never logged in → no server call
+    if (userData || !hasLoginHint()) {
       setCheckingAuth(false);
       return;
     }
@@ -26,6 +28,8 @@ const Body = () => {
       });
       dispatch(addUser(res.data));
     } catch (err) {
+      // Token expired or invalid → forget the hint so we stop asking
+      if (err.status === 401) setLoginHint(false);
       // Signup is public, so don't push logged-out visitors away from it
       if (err.status === 401 && location.pathname !== "/signup") {
         navigate("/login");

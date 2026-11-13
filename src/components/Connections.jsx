@@ -10,6 +10,7 @@ import Icon from "./ui/Icon";
 import EmptyState from "./ui/EmptyState";
 import PageHeader from "./ui/PageHeader";
 import PersonCard from "./ui/PersonCard";
+import VirtualList from "./ui/VirtualList";
 
 const Connections = () => {
   const connections = useSelector((store) => store.connections);
@@ -51,7 +52,7 @@ const Connections = () => {
   const q = query.trim().toLowerCase();
   const visible = q
     ? connections.filter((c) =>
-        `${c.firstName} ${c.lastName}`.toLowerCase().includes(q)
+        `${c.firstName} ${c.lastName}`.toLowerCase().includes(q),
       )
     : connections;
 
@@ -81,32 +82,34 @@ const Connections = () => {
           No connections match &ldquo;{query}&rdquo;.
         </p>
       ) : (
-        <div className="space-y-4">
-          {visible.map((connection, i) => {
+        <VirtualList
+          items={visible}
+          getKey={(connection) => connection._id}
+          renderItem={(connection, i) => {
             const unreadCount = unread[connection._id] || 0;
             return (
-            <PersonCard
-              key={connection._id}
-              person={connection}
-              online={onlineIds.includes(connection._id)}
-              style={{ animationDelay: `${i * 60}ms` }}
-            >
-              <Link
-                to={"/chat/" + connection._id}
-                className="btn-gradient w-full sm:w-auto"
+              <PersonCard
+                person={connection}
+                online={onlineIds.includes(connection._id)}
+                // stagger only the first screen; rows scrolled in later show at once
+                style={{ animationDelay: `${Math.min(i, 8) * 60}ms` }}
               >
-                <Icon name="message" className="h-4 w-4" />
-                Chat
-                {unreadCount > 0 && (
-                  <span className="grid h-5 min-w-5 place-items-center rounded-full bg-white px-1.5 text-xs font-bold text-primary">
-                    {unreadCount > 99 ? "99+" : unreadCount}
-                  </span>
-                )}
-              </Link>
-            </PersonCard>
+                <Link
+                  to={"/chat/" + connection._id}
+                  className="btn-gradient w-full sm:w-auto"
+                >
+                  <Icon name="message" className="h-4 w-4" />
+                  Chat
+                  {unreadCount > 0 && (
+                    <span className="grid h-5 min-w-5 place-items-center rounded-full bg-white px-1.5 text-xs font-bold text-primary">
+                      {unreadCount > 99 ? "99+" : unreadCount}
+                    </span>
+                  )}
+                </Link>
+              </PersonCard>
             );
-          })}
-        </div>
+          }}
+        />
       )}
     </div>
   );

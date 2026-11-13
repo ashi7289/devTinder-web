@@ -8,6 +8,7 @@ import Icon from "./ui/Icon";
 import EmptyState from "./ui/EmptyState";
 import PageHeader from "./ui/PageHeader";
 import PersonCard from "./ui/PersonCard";
+import VirtualList from "./ui/VirtualList";
 
 const Requests = () => {
   const requests = useSelector((store) => store.requests);
@@ -20,7 +21,7 @@ const Requests = () => {
       await axios.post(
         BASE_URL + "/request/review/" + status + "/" + _id,
         {},
-        { withCredentials: true }
+        { withCredentials: true },
       );
       dispatch(removeRequest(_id));
     } catch {
@@ -70,12 +71,14 @@ const Requests = () => {
         subtitle="Developers who want to connect with you."
       />
 
-      <div className="space-y-4">
-        {validRequests.map((request, i) => (
+      <VirtualList
+        items={validRequests}
+        getKey={(request) => request._id}
+        renderItem={(request, i) => (
           <PersonCard
-            key={request._id}
             person={request.fromUserId}
-            style={{ animationDelay: `${i * 60}ms` }}
+            // stagger only the first screen; rows scrolled in later show at once
+            style={{ animationDelay: `${Math.min(i, 8) * 60}ms` }}
           >
             <button
               className="btn flex-1 border-white/10 bg-base-300 hover:border-error/40 hover:bg-error/10 hover:text-error sm:flex-none"
@@ -102,8 +105,8 @@ const Requests = () => {
               Accept
             </button>
           </PersonCard>
-        ))}
-      </div>
+        )}
+      />
     </div>
   );
 };

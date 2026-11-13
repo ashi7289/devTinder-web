@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { createSocketConnection } from "../utils/socket";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { addConnections } from "../utils/conectionSlice";
 import axios from "axios";
 import { BASE_URL } from "../utils/constants";
 import Icon from "./ui/Icon";
@@ -18,7 +19,9 @@ const formatTime = (date) => {
 
   if (d.toDateString() === today.toDateString()) return time;
   if (d.toDateString() === yesterday.toDateString()) return "Yesterday " + time;
-  return d.toLocaleDateString([], { day: "numeric", month: "short" }) + ", " + time;
+  return (
+    d.toLocaleDateString([], { day: "numeric", month: "short" }) + ", " + time
+  );
 };
 
 const Chat = () => {
@@ -28,7 +31,7 @@ const Chat = () => {
   const user = useSelector((store) => store.user);
   const connections = useSelector((store) => store.connections);
   const isOnline = useSelector((store) =>
-    store.presence.includes(targetUserId)
+    store.presence.includes(targetUserId),
   );
   const userId = user?._id;
   const socketRef = useRef(null);
@@ -37,9 +40,30 @@ const Chat = () => {
   const [notAllowed, setNotAllowed] = useState(false);
   // When the other person last read this chat (null = never)
   const [otherLastRead, setOtherLastRead] = useState(null);
+  // true until the chat history has loaded
+  const [loading, setLoading] = useState(true);
+  // first jump to the bottom is instant, later ones scroll smoothly
+  const scrolledOnce = useRef(false);
+  // stop waiting for the header info if connections can't be loaded
+  const [connectionsFailed, setConnectionsFailed] = useState(false);
+  // Show the spinner (and hide the header) until messages and header info are ready
+  const showLoader = loading || (!connections && !connectionsFailed);
 
   // Header info comes from the connections list when it's already loaded
   const target = connections?.find((c) => c._id === targetUserId);
+  const dispatch = useDispatch();
+
+  // After a page reload the store is empty, so load connections for the header
+  useEffect(() => {
+    if (connections) return;
+    axios
+      .get(BASE_URL + "/user/connections", { withCredentials: true })
+      .then((res) => dispatch(addConnections(res.data.data)))
+      .catch((err) => {
+        console.error(err);
+        setConnectionsFailed(true);
+      });
+  }, [connections, dispatch]);
 
   const fetchChatMessages = async () => {
     let chat;
@@ -49,6 +73,7 @@ const Chat = () => {
       });
     } catch (err) {
       if (err.response?.status === 403) setNotAllowed(true);
+      setLoading(false);
       return;
     }
 
@@ -64,6 +89,7 @@ const Chat = () => {
     });
     setMessages(chatMessages);
     setOtherLastRead(chat?.data?.lastRead?.[targetUserId] || null);
+    setLoading(false);
   };
   useEffect(() => {
     fetchChatMessages();
@@ -118,10 +144,15 @@ const Chat = () => {
     };
   }, [userId, targetUserId]);
 
-  // Keep the newest message in view
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  // Keep the newest message in view. useLayoutEffect runs before paint,
+  // so the first jump to the last message happens before anything is shown.
+  useLayoutEffect(() => {
+    if (showLoader) return;
+    bottomRef.current?.scrollIntoView({
+      behavior: scrolledOnce.current ? "smooth" : "auto",
+    });
+    scrolledOnce.current = true;
+  }, [messages, showLoader]);
 
   const sendMessage = (e) => {
     e.preventDefault();
@@ -142,8 +173,12 @@ const Chat = () => {
   if (notAllowed) {
     return (
       <div className="flex flex-col items-center gap-4 py-20 text-center">
-        <h2 className="text-xl font-semibold">You can&apos;t chat with this user</h2>
-        <p className="opacity-70">You can only message people you are connected with.</p>
+        <h2 className="text-xl font-semibold">
+          You can&apos;t chat with this user
+        </h2>
+        <p className="opacity-70">
+          You can only message people you are connected with.
+        </p>
         <Link to="/connections" className="btn btn-primary btn-sm">
           Go to Connections
         </Link>
@@ -154,45 +189,51 @@ const Chat = () => {
   return (
     <div className="mx-auto flex h-[calc(100dvh-11rem)] max-w-3xl flex-col px-0 pt-0 sm:px-4 sm:pt-6 md:h-[calc(100dvh-6.5rem)]">
       <div className="glass-card flex min-h-0 flex-1 flex-col overflow-hidden rounded-none sm:rounded-box">
-        <div className="flex items-center gap-3 border-b border-white/5 px-4 py-3">
-          <Link
-            to="/connections"
-            className="btn btn-circle btn-ghost btn-sm"
-            aria-label="Back to messages"
-          >
-            <Icon name="arrowLeft" className="h-5 w-5" />
-          </Link>
-          {target ? (
-            <>
-              <Avatar
-                src={target.photoUrl}
-                firstName={target.firstName}
-                lastName={target.lastName}
-                className="h-10 w-10 text-sm"
-                ring={false}
-                online={isOnline}
-              />
-              <div className="min-w-0">
-                <h1 className="truncate font-semibold">
-                  {target.firstName} {target.lastName}
-                </h1>
-                <p
-                  className={
-                    "text-xs " +
-                    (isOnline ? "text-success" : "text-gray-500")
-                  }
-                >
-                  {isOnline ? "Online" : "Offline"}
-                </p>
-              </div>
-            </>
-          ) : (
-            <h1 className="font-semibold">Chat</h1>
-          )}
-        </div>
+        {!showLoader && (
+          <div className="flex items-center gap-3 border-b border-white/5 px-4 py-3">
+            <Link
+              to="/connections"
+              className="btn btn-circle btn-ghost btn-sm"
+              aria-label="Back to messages"
+            >
+              <Icon name="arrowLeft" className="h-5 w-5" />
+            </Link>
+            {target ? (
+              <>
+                <Avatar
+                  src={target.photoUrl}
+                  firstName={target.firstName}
+                  lastName={target.lastName}
+                  className="h-10 w-10 text-sm"
+                  ring={false}
+                  online={isOnline}
+                />
+                <div className="min-w-0">
+                  <h1 className="truncate font-semibold">
+                    {target.firstName} {target.lastName}
+                  </h1>
+                  <p
+                    className={
+                      "text-xs " + (isOnline ? "text-success" : "text-gray-500")
+                    }
+                  >
+                    {isOnline ? "Online" : "Offline"}
+                  </p>
+                </div>
+              </>
+            ) : (
+              <h1 className="font-semibold">Chat</h1>
+            )}
+          </div>
+        )}
 
         <div className="flex-1 space-y-2 overflow-y-auto px-4 py-6">
-          {messages.length === 0 && (
+          {showLoader && (
+            <div className="flex h-full items-center justify-center">
+              <span className="loading loading-ring loading-lg text-primary"></span>
+            </div>
+          )}
+          {!showLoader && messages.length === 0 && (
             <div className="flex h-full flex-col items-center justify-center gap-2 text-center text-base-content/50">
               <Icon name="message" className="h-10 w-10 text-primary/60" />
               <p>No messages yet</p>
@@ -203,35 +244,36 @@ const Chat = () => {
               </p>
             </div>
           )}
-          {messages.map((msg, index) => {
-            const mine = msg.senderId === userId;
-            return (
-              <div
-                key={index}
-                className={
-                  "flex flex-col " + (mine ? "items-end" : "items-start")
-                }
-              >
+          {!showLoader &&
+            messages.map((msg, index) => {
+              const mine = msg.senderId === userId;
+              return (
                 <div
+                  key={index}
                   className={
-                    "max-w-[78%] whitespace-pre-wrap break-words rounded-2xl px-4 py-2.5 text-[15px] leading-relaxed shadow " +
-                    (mine
-                      ? "rounded-br-md bg-gradient-to-br from-primary to-secondary text-white"
-                      : "rounded-bl-md border border-white/5 bg-base-300 text-base-content")
+                    "flex flex-col " + (mine ? "items-end" : "items-start")
                   }
                 >
-                  {msg.text}
+                  <div
+                    className={
+                      "max-w-[78%] whitespace-pre-wrap break-words rounded-2xl px-4 py-2.5 text-[15px] leading-relaxed shadow " +
+                      (mine
+                        ? "rounded-br-md bg-gradient-to-br from-primary to-secondary text-white"
+                        : "rounded-bl-md border border-white/5 bg-base-300 text-base-content")
+                    }
+                  >
+                    {msg.text}
+                  </div>
+                  {index === lastMineIndex && (
+                    <span className="mt-1 px-1 text-xs text-base-content/50">
+                      {isSeen(msg)
+                        ? "Seen " + formatTime(otherLastRead)
+                        : "Sent " + formatTime(msg.createdAt)}
+                    </span>
+                  )}
                 </div>
-                {index === lastMineIndex && (
-                  <span className="mt-1 px-1 text-xs text-base-content/50">
-                    {isSeen(msg)
-                      ? "Seen " + formatTime(otherLastRead)
-                      : "Sent " + formatTime(msg.createdAt)}
-                  </span>
-                )}
-              </div>
-            );
-          })}
+              );
+            })}
           <div ref={bottomRef} />
         </div>
 
