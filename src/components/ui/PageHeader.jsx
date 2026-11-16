@@ -4,7 +4,7 @@ const PageHeader = ({ title, subtitle, count, children }) => (
       <h1 className="page-title flex items-center gap-3">
         {title}
         {count !== undefined && (
-          <span className="rounded-full bg-gradient-to-r from-primary to-secondary px-3 py-0.5 text-base font-bold text-white">
+          <span className="grid h-8 min-w-8 place-items-center rounded-full bg-gradient-to-r from-primary to-secondary px-2.5 text-base font-bold leading-none text-white">
             {count}
           </span>
         )}

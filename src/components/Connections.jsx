@@ -101,7 +101,7 @@ const Connections = () => {
                   <Icon name="message" className="h-4 w-4" />
                   Chat
                   {unreadCount > 0 && (
-                    <span className="grid h-5 min-w-5 place-items-center rounded-full bg-white px-1.5 text-xs font-bold text-primary">
+                    <span className="grid h-5 min-w-5 place-items-center rounded-full bg-white px-1.5 text-xs font-bold leading-none text-primary">
                       {unreadCount > 99 ? "99+" : unreadCount}
                     </span>
                   )}

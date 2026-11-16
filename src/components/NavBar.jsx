@@ -21,7 +21,7 @@ const NAV_ITEMS = [
 const CountBadge = ({ count, className = "" }) =>
   count > 0 && (
     <span
-      className={`absolute grid h-[18px] min-w-[18px] place-items-center rounded-full bg-gradient-to-r from-primary to-secondary px-1 text-[10px] font-bold text-white ring-2 ring-base-100 ${className}`}
+      className={`absolute grid h-[18px] min-w-[18px] place-items-center rounded-full bg-gradient-to-r from-primary to-secondary px-1 text-[10px] font-bold leading-none text-white ring-2 ring-base-100 ${className}`}
     >
       {count > 99 ? "99+" : count}
     </span>
