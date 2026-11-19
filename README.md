@@ -46,7 +46,7 @@ Router=/profile => Profile
     - Signup on AWS
     - Launch instance
     - chmod 400 <secret>.pem
-    - ssh -i "devTinder-secret.pem" ubuntu@ec2-43-204-96-49.ap-south-1.compute.amazonaws.com
+    - ssh -i "<YOUR_KEY>.pem" ubuntu@<YOUR_EC2_PUBLIC_DNS>
     - Install Node version 16.17.0
     - Git clone
     - Frontend
@@ -68,21 +68,21 @@ Router=/profile => Profile
         - pm2 list, pm2 flush <name> , pm2 stop <name>, pm2 delete <name>
         - config nginx - /etc/nginx/sites-available/default
         - restart nginx - sudo systemctl restart nginx
-        - Modify the BASEURL in frontend project to "/api"
+        - Set VITE_BASE_URL in .env.production to "/api"
 
 # Ngxinx config:
 
-        Frontend = http://43.204.96.49/
-        Backend = http://43.204.96.49:3000/
+        Frontend = http://<YOUR_SERVER_IP>/
+        Backend = http://<YOUR_SERVER_IP>:3000/
 
-        Domain name = devtinder.com => 43.204.96.49
+        Domain name = <YOUR_DOMAIN> => <YOUR_SERVER_IP>
 
-        Frontend = devtinder.com
-        Backend = devtinder.com:3000 => devtinder.com/api
+        Frontend = <YOUR_DOMAIN>
+        Backend = <YOUR_DOMAIN>:3000 => <YOUR_DOMAIN>/api
 
         nginx config :
 
-        server_name 43.204.96.49;
+        server_name <YOUR_SERVER_IP> <YOUR_DOMAIN>;
 
         location /api/ {
             proxy_pass http://localhost:3000/;  # Pass the request to the Node.js app
@@ -99,7 +99,7 @@ Router=/profile => Profile
     - signup on cloudflare & add a new domain name
     - change the nameservers on godaddy and point it to cloudflare
     - wait for sometime till your nameservers are updated ~15 minutes
-    - DNS record: A devtinder.in 43.204.96.49
+    - DNS record: A <YOUR_DOMAIN> <YOUR_SERVER_IP>
     - Enable SSL for website
 
 # Sending Emails via SES
